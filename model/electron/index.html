@@ -1,24 +1,205 @@
-<!doctype html>
-<html>
-	<head>
-		<meta charset="utf-8">
-		<title>Electron boilerplate</title>
-		<link rel="stylesheet" href="index.css">
-	</head>
-	<script>window.$ = window.jQuery = require('jquery');</script>
-	<body>
-		<div class="container">
-			<header>
-				<h1>Electron boilerplate</h1>
-			</header>
-			<section class="main"></section>
-			<footer></footer>
-		</div>
-	</body>
-	<script>
-	$.post("http://172.16.114.18:8080/post1",{name:"This Sucks"},function(data,status){
-		console.log("THE data is"+data[params]);
-		console.log("The status is"+status);
-	})
-	</script>
+
+<!DOCTYPE html>
+<html ng-app="myapp">
+<head>
+  <script src="http://code.highcharts.com/adapters/standalone-framework.js"></script>
+  <script src="http://code.highcharts.com/stock/highstock.src.js"></script>
+  <script src="angular.min.js"></script>
+  <script src="jquery-1.7.1.min.js"></script>
+  <script src="highcharts-ng.js"></script>
+<script src="http://code.highcharts.com/highcharts.src.js"></script>
+<script>
+//See: https://github.com/pablojim/highcharts-ng
+var myapp = angular.module('myapp', ["highcharts-ng"]);
+
+myapp.controller('myctrl', function ($scope,request) {
+  var color=['#00cc00','#cccc00','#ffff00','#ff9933','#ff3300','#440044'];
+  var rangeSpeed=[30,60,90,120,160];
+  var rangeCO2=[6,11,17,23,29];
+  var rangeMAF=[7,15,22,30,37];
+  var rangepressure=[19,38,56,75,94];
+  var rangeRpm=[612,1223,1835,2446,3058];
+  var rangetemp=[4,8,11,15,19];
+    $scope.click = function (phenom) {
+      var objrange;
+      switch(phenom)
+      {
+        case "Speed":
+          objrange=rangeSpeed;
+          break;
+        case "CO2":
+          objrange=rangeCO2;
+          break;
+        case "Calculated MAF":
+          objrange=rangeMAF;
+          break;
+        case "Intake Temperature":
+          objrange=rangetemp;
+          break;
+        case "Intake Pressure":
+          objrange=rangepressure;
+          break;
+        case "Rpm":
+          objrange=rangeRpm;
+          break;
+
+
+      }
+      var url = "https://envirocar.org/api/stable/tracks/56d9dc80e4b0b5e23789124a";
+      request.get(url).then(function (data) {
+        console.log(data.data);
+        //now we have access to data. Let us generate graphs for this data.
+      //  $scope.data = data;
+        var rnd = [];
+        console.log(data.data.features);
+        var len_data=data.data.features.length;
+        $('#chart1').show();
+        // the no. of data points that need to be plotted.
+        for(var i=0;i<len_data;i++)
+        {
+            console.log(data.data.features[i].properties.time);
+          var date=data.data.features[i].properties.time;
+          var dateObj=Date.parse(date);
+          console.log(dateObj);
+          var speed = data.data.features[i].properties.phenomenons[phenom].value;
+          console.log(speed)
+          rnd.push([dateObj,Number(speed)]);
+          console.log(rnd)
+        }
+        $scope.chartConfig.series.push({
+            data: rnd,
+            name: phenom,
+            lineWidth: 3,
+            zones: [{
+               value: objrange[0],
+               color: color[0]
+           }, {
+               value: objrange[1],
+               color: color[1]
+           }, {
+               value: objrange[2],
+               color: color[2]
+           }, {
+               value: objrange[3],
+               color: color[3]
+           }, {
+               value: objrange[4],
+               color: color[4]
+           },
+         {
+           color: color[5]
+         }]
+        });
+        /*
+        var rnd=[];
+        for(var i=0;i<len_data;i++)
+        {
+            console.log(data.data.features[i].properties.time);
+          var date=data.data.features[i].properties.time;
+          var dateObj=Date.parse(date);
+          console.log(dateObj);
+          var speed = data.data.features[i].properties.phenomenons.CO2.value;
+          console.log(speed)
+          rnd.push([dateObj,Number(speed)]);
+          console.log(rnd)
+        }
+        $scope.chartConfig.series.push({
+            data: rnd,
+            name:'CO2',
+            lineWidth: 3
+        });
+        */
+      });
+    };
+    $scope.remove = function (phenom) {
+        var seriesArray = $scope.chartConfig.series;
+        for(var i=0;i<seriesArray.length;i++)
+        {
+          console.log(seriesArray[i].name+"is name");
+          console.log(phenom+"is selected phenom");
+          if(seriesArray[i].name==phenom)
+          {
+            seriesArray.splice(i,1)
+          }
+        }
+      //  var rndIdx = Math.floor(Math.random() * seriesArray.length);
+      //  seriesArray.splice(rndIdx, 1)
+    }
+
+
+   $scope.swapChartType = function () {
+        if (this.chartConfig.options.chart.type === 'line') {
+            this.chartConfig.options.chart.type = 'bar'
+        } else {
+            this.chartConfig.options.chart.type = 'line'
+            this.chartConfig.options.chart.zoomType = 'x'
+        }
+    }
+    $scope.sizes = [ {code: 1, name: 'Speed'}, {code: 2, name: 'CO2'}, {code:3, name:'Rpm'}, {code:4, name:'Intake Pressure'}, {code:5,name:'Intake Temperature'},{code:6, name:'Calculated MAF'}];
+    $scope.item1 = [{code:1,name: 'Speed'}];
+  $scope.update = function() {
+    console.log($scope.item.code, $scope.item.name)
+  //  click($scope.item.name);
+  //  console.log("call was successful");
+  }
+
+
+    $scope.toggleLoading = function () {
+        this.chartConfig.loading = !this.chartConfig.loading
+    }
+
+    $scope.chartConfig = {
+        options: {
+            chart: {
+                type: 'line',
+                  zoomType: 'x'
+
+            }
+        },
+
+        series: [],
+       xAxis:{
+          type: 'datetime',
+          title: {text: 'Time'}
+        },
+        title: {
+            text: 'A Simple EnviroCar analysis'
+        },
+
+        loading: false,
+        useHighStocks: true
+    }
+
+});
+myapp.factory('request', function($http) {
+  var get = function(url) {
+    return $http.get(url).success(function(data) {
+      console.log(data)
+      console.log(data.features)
+      return data;
+    });
+  }
+
+  return {
+    get: get
+  }
+});
+</script>
+</head>
+<body>
+    <div ng-controller="myctrl">
+        <div class="span12">
+            <input ng-model="chartConfig.title.text">
+        <!--   <button ng-click="click()">Get DATA</button> -->
+           <button ng-click="swapChartType()">Line/Bar</button>
+           <p>Select any of these parmaters to plot them(To select multiple, click one by one)</p>
+            <select id = "to select" ng-options="size as size.name for size in sizes " ng-model="item1" ng-change="click(item1.name)"></select>
+            <p>Select one of these paramters to remove them</p>
+            <select id = "to remove" ng-options="size as size.name for size in sizes " ng-model="item2" ng-change="remove(item2.name)"></select>
+
+         </div>
+        <div class="row">
+            <highchart id="chart1" config="chartConfig" class="span10" style="display:none;width:100%;height:500px"></highchart>
+        </div>
+    </div>
 </html>

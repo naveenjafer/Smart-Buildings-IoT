@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Electron boilerplate</title>
+		<link rel="stylesheet" href="index.css">
+	</head>
+	<script>window.$ = window.jQuery = require('jquery');</script>
+	<body>
+		<div class="container">
+			<header>
+				<h1>Electron boilerplate</h1>
+			</header>
+			<section class="main"></section>
+			<footer></footer>
+		</div>
+	</body>
+	<script>
+	$.post("https://timeline-api-fossasia-redirect.herokuapp.com/page2",{name:"This Sucks"},function(data,status){
+		console.log("THE data is"+data);
+		console.log("The status is"+status);
+	})
+	</script>
+</html>

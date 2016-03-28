@@ -1,6 +1,6 @@
 'use strict';
 const electron = require('electron');
-const app = electron.app;
+const apps = electron.app;
 
 
 // report crashes to the Electron project
@@ -19,6 +19,7 @@ function onClosed() {
 }
 
 function createMainWindow() {
+	//debugger;
 	const win = new electron.BrowserWindow({
 		width: 600,
 		height: 400
@@ -26,22 +27,21 @@ function createMainWindow() {
 
 	win.loadURL(`file://${__dirname}/index.html`);
 	win.on('closed', onClosed);
-
 	return win;
 }
 
-app.on('window-all-closed', () => {
+apps.on('window-all-closed', () => {
 	if (process.platform !== 'darwin') {
-		app.quit();
+		apps.quit();
 	}
 });
 
-app.on('activate', () => {
+apps.on('activate', () => {
 	if (!mainWindow) {
 		mainWindow = createMainWindow();
 	}
 });
 
-app.on('ready', () => {
+apps.on('ready', () => {
 	mainWindow = createMainWindow();
 });
